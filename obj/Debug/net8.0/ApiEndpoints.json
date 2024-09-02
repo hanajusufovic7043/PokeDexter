@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "PokeDexter.Components.Controllers.FavoritesController",
+    "Method": "SaveFavorites",
+    "RelativePath": "api/Favorites/save",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "favorites",
+        "Type": "System.Collections.Generic.List\u00601[[PokeDexter.Components.Models.Pokemon, PokeDexter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

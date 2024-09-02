@@ -1,0 +1,164 @@
+﻿@page "/favorites"
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
+@using PokeDexter.Components.Models
+@rendermode InteractiveServer
+@using System.Text.Json;
+@inject PokeDexter.Components.Services.IPokemonService PokemonService
+
+<h3>Favorite Pokémon</h3>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success">
+        @successMessage
+    </div>
+}
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (favoritePokemons == null || favoritePokemons.Count == 0)
+{
+    <p>No favorite Pokémon found!</p>
+}
+else
+{
+    <button class="btn btn-primary mb-3" @onclick="SaveFavoritesToDisk">Save Favorites to Disk</button>
+
+    <div class="row justify-content-center">
+        @foreach (var pokemon in favoritePokemons)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card mx-auto shadow-lg" style="border-radius: 15px; transition: transform 0.2s;">
+                    <img src="@pokemon.ImageUrl" alt="@pokemon.Name" class="card-img-top" />
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@pokemon.Name</h5>
+                        <button class="btn btn-danger mt-4" @onclick="() => ConfirmRemoveFromFavorites(pokemon.Name)">Remove from Favorites</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Pokemon> favoritePokemons = new List<Pokemon>();
+    private bool isLoading = true;
+    private string successMessage;
+    private CancellationTokenSource cancellationTokenSource;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var favoritesJson = await LocalStorage.GetItemAsync<string>("favorites") ?? "[]";
+                favoritePokemons = JsonSerializer.Deserialize<List<Pokemon>>(favoritesJson) ?? new List<Pokemon>();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error retrieving favorites: {ex.Message}");
+            }
+            finally
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task ConfirmRemoveFromFavorites(string name)
+    {
+        bool confirmed = await ShowConfirmationDialog($"Are you sure you want to remove {name} from favorites?");
+        if (confirmed)
+        {
+            await RemoveFromFavorites(name);
+        }
+    }
+
+    private async Task RemoveFromFavorites(string name)
+    {
+        var favoritesJson = await LocalStorage.GetItemAsync<string>("favorites") ?? "[]";
+        var favorites = JsonSerializer.Deserialize<List<Pokemon>>(favoritesJson) ?? new List<Pokemon>();
+
+        var pokemonToRemove = favorites.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (pokemonToRemove != null)
+        {
+            favorites.Remove(pokemonToRemove);
+            var serializedFavorites = JsonSerializer.Serialize(favorites);
+            await LocalStorage.SetItemAsync("favorites", serializedFavorites);
+
+            favoritePokemons.RemoveAll(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            SetSuccessMessage($"{pokemonToRemove.Name} has been removed from your favorites. ❌");
+        }
+    }
+
+    private void SetSuccessMessage(string message)
+    {
+        successMessage = message;
+        StateHasChanged();
+        ShowSuccessMessage();
+    }
+
+    private void ShowSuccessMessage()
+    {
+        cancellationTokenSource?.Cancel();
+        cancellationTokenSource = new CancellationTokenSource();
+
+        _ = Task.Delay(3000, cancellationTokenSource.Token).ContinueWith(t =>
+        {
+            if (!t.IsCanceled)
+            {
+                successMessage = null;
+                InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    private async Task SaveFavoritesToDisk()
+    {
+        var httpClient = HttpClientFactory.CreateClient();
+
+        if (httpClient.BaseAddress == null)
+        {
+            var baseUrl = NavigationManager.BaseUri;
+            httpClient.BaseAddress = new Uri(baseUrl);
+        }
+
+        var favoritesJson = await LocalStorage.GetItemAsync<string>("favorites") ?? "[]";
+        var favorites = JsonSerializer.Deserialize<List<Pokemon>>(favoritesJson) ?? new List<Pokemon>();
+
+        var response = await httpClient.PostAsJsonAsync("api/favorites/save", favorites);
+        var content = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<SaveResponse>();
+            successMessage = result?.Message;
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.Error.WriteLine($"API error response: {errorContent}");
+            successMessage = "Failed to save favorites.";
+        }
+
+        StateHasChanged();
+    }
+
+
+    private class SaveResponse
+    {
+        public string Message { get; set; }
+    }
+
+    private async Task<bool> ShowConfirmationDialog(string message)
+    {
+        return await Task.FromResult(true);
+    }
+}

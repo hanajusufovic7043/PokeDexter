@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\PC\\source\\repos\\PokeDexter\\PokeDexter\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\PokeDexter.bundle.scp.css",
+      "PackagePath": "staticwebassets\\PokeDexter.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\PC\\source\\repos\\PokeDexter\\PokeDexter\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\PC\\source\\repos\\PokeDexter\\PokeDexter\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\PC\\source\\repos\\PokeDexter\\PokeDexter\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\PC\\source\\repos\\PokeDexter\\PokeDexter\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.PokeDexter.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.PokeDexter.props",
+      "PackagePath": "build\\PokeDexter.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.PokeDexter.props",
+      "PackagePath": "buildMultiTargeting\\PokeDexter.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.PokeDexter.props",
+      "PackagePath": "buildTransitive\\PokeDexter.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

@@ -1,0 +1,85 @@
+﻿@page "/pokemon-detail/{name}"
+@using PokeDexter.Components.Models
+@using PokeDexter.Components.Services
+@using System.Text.Json;
+@inject IPokemonService PokemonService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@rendermode InteractiveServer
+
+<h3>Pokémon Detail</h3>
+
+@if (pokemon == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card mx-auto shadow-lg" style="width: 24rem; border-radius: 15px;">
+        <img src="@pokemon.ImageUrl" alt="@pokemon.Name" class="card-img-top" style="border-top-left-radius: 15px; border-top-right-radius: 15px;" />
+        <div class="card-body text-center">
+            <h4 class="card-title">@pokemon.Name</h4>
+            <p class="card-text"><strong>Height:</strong> @Math.Round(pokemon.Height * 0.1) m</p>
+            <p class="card-text"><strong>Weight:</strong> @Math.Round(pokemon.Weight * 0.1) kg</p>
+
+            <h5>Types</h5>
+            <ul class="list-inline">
+                @foreach (var type in pokemon.Types)
+                {
+                    <li class="list-inline-item badge type-@type.Type.Name">@type.Type.Name</li>
+                }
+            </ul>
+
+            <button class="btn btn-primary mt-3" @onclick="AddToFavorites">Add to Favorites</button>
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success mt-3">@successMessage</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string name { get; set; }
+    private Pokemon pokemon;
+    private string successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            pokemon = await PokemonService.GetPokemonDetailsAsync(name);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load Pokémon details: {ex.Message}");
+        }
+    }
+
+    private async Task AddToFavorites()
+    {
+        var favorites = await LocalStorage.GetItemAsync<string>("favorites") ?? "[]"; 
+        var pokemonList = JsonSerializer.Deserialize<List<Pokemon>>(favorites) ?? new List<Pokemon>();
+
+        // Check if the current Pokémon is already in the favorites list
+        if (!pokemonList.Any(p => p.Name.Equals(pokemon.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            pokemonList.Add(pokemon); 
+            var serializedFavorites = JsonSerializer.Serialize(pokemonList); 
+            await LocalStorage.SetItemAsync("favorites", serializedFavorites); 
+            successMessage = $"{pokemon.Name} has been added to your favorites! 🎉"; 
+        }
+        else
+        {
+            successMessage = $"{pokemon.Name} is already in your favorites. ❤️"; 
+        }
+
+      
+        StateHasChanged(); // Force re-render
+
+        await Task.Delay(3000); 
+        successMessage = null; 
+    }
+
+
+}

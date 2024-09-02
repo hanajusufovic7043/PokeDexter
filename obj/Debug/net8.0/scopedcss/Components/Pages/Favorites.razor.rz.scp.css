@@ -1,0 +1,8 @@
+.card-img-top[b-bik7o0zekm] {
+    width: 100%;
+    height: auto;
+    max-height: 200px; /* Maximum height to maintain uniformity */
+    object-fit: contain; /* Use contain to prevent cropping */
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}

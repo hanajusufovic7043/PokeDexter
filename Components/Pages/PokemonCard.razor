@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using PokeDexter.Components.Models
+
+
+<div class="card h-100">
+    <div class="card-body">
+        <h5 class="card-title">@Pokemon.Name</h5>
+       
+    </div>
+    <div class="card-footer text-center position-relative">
+        
+    </div>
+</div>
+
+@code {
+    [Parameter] public Pokemon Pokemon { get; set; }
+}

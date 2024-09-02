@@ -1,0 +1,123 @@
+﻿@page "/pokemon-list"
+@rendermode InteractiveServer
+@using PokeDexter.Components.Models
+@using PokeDexter.Components.Services
+@inject IPokemonService PokemonService
+@inject NavigationManager NavigationManager
+
+<h3>Pokémon List</h3>
+
+<div class="mb-3">
+    <input type="text" @bind="SearchTerm" @oninput="OnSearchTermChanged" placeholder="Search Pokémon..." class="form-control" />
+</div>
+
+@if (filteredPokemonList == null || filteredPokemonList.Count == 0)
+{
+    <p><em>No Pokémon found.</em></p>
+}
+else
+{
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var pokemon in paginatedPokemonList)
+        {
+            <div class="col">
+                <div class="card h-100" @onclick="() => NavigateToDetail(pokemon.Name)">
+                    <PokemonCard Pokemon="pokemon" />
+                </div>
+            </div>
+        }
+    </div>
+
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(HasPreviousPage ? "" : "disabled")">
+                <button class="page-link" @onclick="PreviousPage">Previous</button>
+            </li>
+            <li class="page-item disabled"><span class="page-link">Page @CurrentPage of @TotalPages</span></li>
+            <li class="page-item @(HasNextPage ? "" : "disabled")">
+                <button class="page-link" @onclick="NextPage">Next</button>
+            </li>
+        </ul>
+    </nav>
+}
+
+@code {
+    private List<Pokemon> pokemonList; 
+    private List<Pokemon> filteredPokemonList; 
+    private List<Pokemon> paginatedPokemonList; 
+    private int CurrentPage { get; set; } = 1;
+    private const int PageSize = 24;
+    private int TotalCount => filteredPokemonList?.Count ?? 0;
+    private int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+    private bool HasNextPage => CurrentPage < TotalPages;
+    private bool HasPreviousPage => CurrentPage > 1;
+    private string SearchTerm { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPokemon();
+    }
+
+    private async Task LoadPokemon()
+    {
+        // Load all Pokémon names initially
+        pokemonList = await PokemonService.GetPokemonListAsync(1000, 0); 
+        filteredPokemonList = pokemonList; 
+        FilterPokemonList(); 
+    }
+
+    private void FilterPokemonList()
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            filteredPokemonList = pokemonList; // If no search term, show all
+        }
+        else
+        {
+            filteredPokemonList = pokemonList
+                .Where(p => p.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        CurrentPage = 1;
+        UpdatePaginatedList();
+    }
+
+    private void UpdatePaginatedList()
+    {
+        paginatedPokemonList = filteredPokemonList
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+    }
+
+    private void OnSearchTermChanged(ChangeEventArgs e)
+    {
+        SearchTerm = e.Value.ToString();
+        FilterPokemonList();
+    }
+
+    private void NavigateToDetail(string name)
+    {
+        NavigationManager.NavigateTo($"/pokemon-detail/{name.ToLower()}");
+    }
+
+    private async Task NextPage()
+    {
+        if (HasNextPage)
+        {
+            CurrentPage++;
+            UpdatePaginatedList();
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (HasPreviousPage)
+        {
+            CurrentPage--;
+            UpdatePaginatedList();
+        }
+    }
+}
+

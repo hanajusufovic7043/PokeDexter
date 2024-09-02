@@ -1,0 +1,30 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<div class="container text-center mt-5">
+    <h1 class="display-4 mb-4">Welcome to PokeDexter!</h1> 
+    <p class="lead mb-lg-5">Your one-stop destination for all things Pokémon.</p>
+
+    <div class="row justify-content-center mb-3">
+    
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-search" style="font-size: 2rem;"></i> Explore Pokémon</h5>
+                    <p class="card-text">Dive into the world of Pokémon and discover all the unique species!</p>
+                    <NavLink class="btn btn-primary" href="pokemon-list">Explore</NavLink>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-heart-fill" style="font-size: 2rem;"></i> Favorite Pokémon</h5>
+                    <p class="card-text">Keep track of your favorite Pokémon and never lose sight of them!</p>
+                    <NavLink class="btn btn-primary" href="favorites">View Favorites</NavLink>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
